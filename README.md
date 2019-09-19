@@ -5,7 +5,7 @@ This is the first OTA capable Numitron watch!!! (At least the first one I have s
 This simple example provides
 
 - Gerber Files for a Numitron Watch and generated GCode (with flatcam) for milling the PCB (with grbl)
-- Code provides a driver for the watch 
+- Code provides a driver for the watch
 - Watch will update its time and date from the internet via NTPClient
 - A button press will switch between time and date (shown for 3 seconds)
 
