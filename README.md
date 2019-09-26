@@ -1,5 +1,17 @@
 # ESP32 Numitron OTA Watch
 
+<center>
+
+MAIN            |
+:-------------------------:|
+|![](/images/photo_main.jpg)        
+
+TOP            |  BOTTOM
+:-------------------------:|:-------------------------:                           
+![](/images/numitron.png)  |  ![](/images/numitron_b.png)
+
+</center>
+
 This is the first OTA capable Numitron watch!!! (At least the first one I have seen ;))
 
 This simple example provides
