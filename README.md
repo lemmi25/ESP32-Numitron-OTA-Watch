@@ -2,13 +2,15 @@
 
 <center>
 
-MAIN            |
-:-------------------------:|
-|![](/images/photo_main.jpg)        
+| MAIN |
+| :--: |
 
-TOP            |  BOTTOM
-:-------------------------:|:-------------------------:                           
-![](/images/numitron.png)  |  ![](/images/numitron_b.png)
+
+|![](/images/photo_main.jpg)
+
+|            TOP            |           BOTTOM            |
+| :-----------------------: | :-------------------------: |
+| ![](/images/numitron.png) | ![](/images/numitron_b.png) |
 
 </center>
 
