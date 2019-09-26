@@ -14,8 +14,8 @@
 #include <NTPClient.h>
 #include <ArduinoOTA.h>
 
-TLC591x seg1(2, 13, 26, 25); // Tube 1,2 SDI,CLK,LE
-TLC591x seg2(2, 4, 2, 5);    // Tube 3,4 SDI,CLK,LE
+TLC591x seg1(2, 4, 2, 5);    // Tube 3,4 SDI,CLK,LE
+TLC591x seg2(2, 13, 26, 25); // Tube 1,2 SDI,CLK,LE
 
 // Define NTP Client to get time
 WiFiUDP ntpUDP;
@@ -30,8 +30,8 @@ int minute;
 int month;
 int day;
 
-const char *ssid = "KabelBox-FD5C";
-const char *password = "78966844438381424755";
+const char *ssid = "<Your SSID>";
+const char *password = "<Your PSW>";
 
 const byte interruptPin = 15;
 volatile bool interrupt = false;
