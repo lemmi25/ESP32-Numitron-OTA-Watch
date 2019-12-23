@@ -9,60 +9,36 @@
 */
 #include <TLC591x.h>
 #include <WiFi.h>
-#include <ESPmDNS.h>
-#include <WiFiUdp.h>
-#include <NTPClient.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
 #include <ArduinoOTA.h>
 
 TLC591x seg1(2, 4, 2, 5);    // Tube 3,4 SDI,CLK,LE
 TLC591x seg2(2, 13, 26, 25); // Tube 1,2 SDI,CLK,LE
 
-// Define NTP Client to get time
-WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP);
+StaticJsonDocument<500> doc;
+StaticJsonDocument<5000> docWeather;
 
-// Variables to save date and time
-String formattedDate;
-String dateStamp;
-String timeStamp;
-int houre;
-int minute;
-int month;
-int day;
+HTTPClient http;
+HTTPClient httpWeather;
 
-const char *ssid = "<Your SSID>";
-const char *password = "<Your PSW>";
+char timeOld;
+bool enableTimeOld = false;
+const char *date;
 
-const byte interruptPin = 15;
-volatile bool interrupt = false;
-int numberOfInterrupts = 0;
+const char *ssid = "WLAN-164097";
+const char *password = "4028408165188671";
 
-portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
-
-volatile unsigned long alteZeit = 0, entprellZeit = 1000;
-
-void IRAM_ATTR handleInterrupt()
-{
-
-  if ((millis() - alteZeit) > entprellZeit)
-  {
-    portENTER_CRITICAL_ISR(&mux);
-    alteZeit = millis();
-    interrupt = true;
-    Serial.println(interrupt);
-    portEXIT_CRITICAL_ISR(&mux);
-  }
-}
+void setTemp(int temperature, int forecastTime);
+void setPressure(int pressure, int forecastTime);
 
 void setup()
 {
-  pinMode(interruptPin, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(interruptPin), handleInterrupt, FALLING);
 
   Serial.begin(115200);
-  Serial.println("Booting");
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
+
   while (WiFi.waitForConnectResult() != WL_CONNECTED)
   {
     Serial.println("Connection Failed! Rebooting...");
@@ -112,56 +88,183 @@ void setup()
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
-  // Initialize a NTPClient to get time
-  timeClient.begin();
-  // Set offset time in seconds to adjust for your timezone, for example:
-  // GMT +1 = 3600
-  // GMT +8 = 28800
-  // GMT -1 = -3600
-  // GMT 0 = 0
-  timeClient.setTimeOffset(7200);
+  for (int i = 1; i < 99; i++)
+  {
+    seg1.print(i);
+    seg2.print(i);
+    delay(200);
+  }
 }
 
 void loop()
 {
   ArduinoOTA.handle();
-  while (!timeClient.update())
-  {
-    timeClient.forceUpdate();
+
+  //Time
+
+  http.begin("http://worldtimeapi.org/api/timezone/Europe/Berlin.json"); //Specify the URL
+  int httpCodeTime = http.GET();
+
+  if (httpCodeTime > 0)
+  { //Check for the returning code
+
+    // Deserialize the JSON document
+    DeserializationError error = deserializeJson(doc, http.getString());
+
+    if (error)
+    {
+      Serial.print(F("deserializeJson() failed: "));
+      Serial.println(error.c_str());
+      delay(2000); //2sec
+      return;
+    }
+
+    if (enableTimeOld == true)
+    {
+      timeOld = date[15];
+    }
+    enableTimeOld = true;
+
+    //Get Time
+    date = doc["datetime"]; //Get current time
+
+    seg1.print(date[11]);
+    seg1.print(date[14]);
+    /* NixiClock.writeSegment(date[11] - '0', 1);
+    NixiClock.writeSegment(date[12] - '0', 2);
+    NixiClock.writeSegment(date[14] - '0', 3);
+    NixiClock.writeSegment(date[15] - '0', 4);
+ */
+    vTaskDelay(2000); //2sec
   }
 
-  // Extract date
-  formattedDate = timeClient.getFormattedDate();
-  int splitT = formattedDate.indexOf("T");
-  dateStamp = formattedDate.substring(0, splitT - 8);
-
-  //Serial.println(interrupt);
-
-  if (interrupt == true)
+  else
   {
-    dateStamp = formattedDate.substring(5, splitT - 3);
-    month = dateStamp.toInt();
-
-    seg2.print(month);
-
-    dateStamp = formattedDate.substring(8, splitT);
-    day = dateStamp.toInt();
-
-    seg1.print(day);
-
-    delay(3000);
-
-    interrupt = false;
+    Serial.println("Error on HTTP request Time");
   }
 
-  // Extract time
-  timeStamp = formattedDate.substring(splitT + 1, formattedDate.length() - 7);
-  houre = timeStamp.toInt();
+  //Temperature
+  if (timeOld != date[15])
+  {
+    httpWeather.begin("http://api.openweathermap.org/data/2.5/forecast?q=Freiburg,de&cnt=2&units=metric&appid=03e2fbe874af4836c6bf932b697a809b");
+    int httpCodeWeather = httpWeather.GET();
 
-  seg1.print(houre);
+    if (httpCodeWeather > 0)
+    { //Check for the returning code
 
-  timeStamp = formattedDate.substring(splitT + 4, formattedDate.length() - 4);
-  minute = timeStamp.toInt();
+      DeserializationError errorWeather = deserializeJson(docWeather, httpWeather.getString());
 
-  seg2.print(minute);
+      if (errorWeather)
+      {
+        Serial.print(F("deserializeJson() from weather failed: "));
+        Serial.println(errorWeather.c_str());
+        vTaskDelay(2000); //2sec
+      }
+
+      const int tempTime1 = docWeather["list"][0]["main"]["temp"];     //Get current time forecast
+      const int pressure1 = docWeather["list"][0]["main"]["pressure"]; //Get current time forecast
+      seg1.print(55);
+      seg2.print(44);
+      //delay(5000); //4sec
+      //setPressure(pressure1, 3);
+      delay(5000); //4sec
+
+      const int tempTime2 = docWeather["list"][1]["main"]["temp"];     //Get current time
+      const int pressure2 = docWeather["list"][1]["main"]["pressure"]; //Get current time forecast
+      seg1.print(11);
+      seg2.print(22);
+      delay(5000); //4sec
+                   /*       setTemp(tempTime2, 6);
+      
+      setPressure(pressure2, 3);
+      delay(5000); //4sec */
+    }
+    else
+    {
+      Serial.println("Error on HTTP request Date");
+    }
+  }
+  else
+  {
+    return;
+  }
 }
+
+int getdigit(int num, int n)
+{
+  int r, t1, t2;
+
+  t1 = pow(10, n + 1);
+  r = num % t1;
+
+  if (n > 0)
+  {
+    t2 = pow(10, n);
+    r = r / t2;
+  }
+
+  return r;
+}
+
+/* void setPressure(int pressure, int forecastTime)
+{
+  NixiClock.writeSegment(getdigit(pressure, 3), 1);
+  NixiClock.writeSegment(getdigit(pressure, 2), 2);
+  NixiClock.writeSegment(getdigit(pressure, 1), 3);
+  NixiClock.writeSegment(getdigit(pressure, 0), 4);
+} */
+
+/* void setTemp(int temperature, int forecastTime)
+{
+  if (temperature < 10 && temperature > 0)
+  {
+    NixiClock.writeSegment(0, 1);
+    NixiClock.writeSegment(forecastTime, 2);
+    NixiClock.writeSegment(0, 3);
+    NixiClock.writeSegment(temperature, 4);
+    //Serial.println("Between 0 and 10");
+  }
+  else if (temperature > 9)
+  {
+    NixiClock.writeSegment(0, 1);
+    NixiClock.writeSegment(forecastTime, 2);
+    NixiClock.writeSegment(getdigit(temperature, 1), 3);
+    NixiClock.writeSegment(getdigit(temperature, 0), 4);
+    //Serial.println("above 10");
+  }
+  else if (temperature > -10 && temperature < 0)
+  {
+    NixiClock.writeSegment(1, 1);
+    NixiClock.writeSegment(forecastTime, 2);
+    NixiClock.writeSegment(0, 3);
+    NixiClock.writeSegment(temperature, 4);
+    //Serial.println("between -10 and 0");
+  }
+  else if (temperature < -9)
+  {
+    NixiClock.writeSegment(1, 1);
+    NixiClock.writeSegment(forecastTime, 2);
+    NixiClock.writeSegment(getdigit(abs(temperature), 1), 3);
+    NixiClock.writeSegment(getdigit(abs(temperature), 0), 4);
+    //Serial.println("below -9");
+  }
+  else
+  {
+    return;
+  }
+} */
+/* 
+void setup()
+{
+}
+
+void loop()
+{
+  for (int i = 1; i < 99; i++)
+  {
+    seg1.print(i);
+    seg2.print(i);
+    delay(200);
+  }
+}
+ */
