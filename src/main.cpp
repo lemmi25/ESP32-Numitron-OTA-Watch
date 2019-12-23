@@ -22,8 +22,6 @@ StaticJsonDocument<5000> docWeather;
 HTTPClient http;
 HTTPClient httpWeather;
 
-char timeOld;
-bool enableTimeOld = false;
 const char *date;
 
 const char *ssid = "WLAN-164097";
@@ -33,8 +31,32 @@ void setTemp(int temperature, int forecastTime);
 void setPressure(int pressure, int forecastTime);
 int concatenate(int x, int y);
 
+const byte interruptPin = 15;
+volatile bool interrupt = false;
+int numberOfInterrupts = 0;
+
+portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
+
+volatile unsigned long alteZeit = 0, entprellZeit = 1000;
+
+void IRAM_ATTR handleInterrupt()
+{
+
+  if ((millis() - alteZeit) > entprellZeit)
+  {
+    portENTER_CRITICAL_ISR(&mux);
+    alteZeit = millis();
+    interrupt = true;
+    Serial.println(interrupt);
+    portEXIT_CRITICAL_ISR(&mux);
+  }
+}
+
 void setup()
 {
+
+  pinMode(interruptPin, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(interruptPin), handleInterrupt, FALLING);
 
   Serial.begin(115200);
   WiFi.mode(WIFI_STA);
@@ -120,12 +142,6 @@ void loop()
       return;
     }
 
-    if (enableTimeOld == true)
-    {
-      timeOld = date[15];
-    }
-    enableTimeOld = true;
-
     //Get Time
     date = doc["datetime"]; //Get current time
 
@@ -140,9 +156,9 @@ void loop()
   }
 
   //Temperature
-  if (timeOld != date[15])
+  if (interrupt == true)
   {
-    httpWeather.begin("http://api.openweathermap.org/data/2.5/forecast?q=Oldenburg,de&cnt=2&units=metric&appid=03e2fbe874af4836c6bf932b697a809b");
+    httpWeather.begin("http://api.openweathermap.org/data/2.5/forecast?q=Uslar,de&cnt=2&units=metric&appid=03e2fbe874af4836c6bf932b697a809b");
     int httpCodeWeather = httpWeather.GET();
 
     if (httpCodeWeather > 0)
@@ -172,6 +188,7 @@ void loop()
       
       setPressure(pressure2, 3);
       delay(5000); //4sec */
+      interrupt = false;
     }
     else
     {
