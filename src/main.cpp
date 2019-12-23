@@ -31,6 +31,7 @@ const char *password = "4028408165188671";
 
 void setTemp(int temperature, int forecastTime);
 void setPressure(int pressure, int forecastTime);
+int concatenate(int x, int y);
 
 void setup()
 {
@@ -128,13 +129,8 @@ void loop()
     //Get Time
     date = doc["datetime"]; //Get current time
 
-    seg1.print(date[11]);
-    seg1.print(date[14]);
-    /* NixiClock.writeSegment(date[11] - '0', 1);
-    NixiClock.writeSegment(date[12] - '0', 2);
-    NixiClock.writeSegment(date[14] - '0', 3);
-    NixiClock.writeSegment(date[15] - '0', 4);
- */
+    seg1.print(concatenate(date[11] - '0', date[12] - '0'));
+    seg2.print(concatenate(date[14] - '0', date[15] - '0'));
     vTaskDelay(2000); //2sec
   }
 
@@ -146,7 +142,7 @@ void loop()
   //Temperature
   if (timeOld != date[15])
   {
-    httpWeather.begin("http://api.openweathermap.org/data/2.5/forecast?q=Freiburg,de&cnt=2&units=metric&appid=03e2fbe874af4836c6bf932b697a809b");
+    httpWeather.begin("http://api.openweathermap.org/data/2.5/forecast?q=Oldenburg,de&cnt=2&units=metric&appid=03e2fbe874af4836c6bf932b697a809b");
     int httpCodeWeather = httpWeather.GET();
 
     if (httpCodeWeather > 0)
@@ -161,18 +157,16 @@ void loop()
         vTaskDelay(2000); //2sec
       }
 
-      const int tempTime1 = docWeather["list"][0]["main"]["temp"];     //Get current time forecast
-      const int pressure1 = docWeather["list"][0]["main"]["pressure"]; //Get current time forecast
-      seg1.print(55);
-      seg2.print(44);
-      //delay(5000); //4sec
-      //setPressure(pressure1, 3);
+      const int tempTime1 = docWeather["list"][0]["main"]["temp"]; //Get current time forecast
+      //const int pressure1 = docWeather["list"][0]["main"]["pressure"]; //Get current time forecast
+      setTemp(tempTime1, 3);
       delay(5000); //4sec
+      //setPressure(pressure1, 3);
+      //delay(5000); //4sec
 
-      const int tempTime2 = docWeather["list"][1]["main"]["temp"];     //Get current time
-      const int pressure2 = docWeather["list"][1]["main"]["pressure"]; //Get current time forecast
-      seg1.print(11);
-      seg2.print(22);
+      const int tempTime2 = docWeather["list"][1]["main"]["temp"]; //Get current time
+      //const int pressure2 = docWeather["list"][1]["main"]["pressure"]; //Get current time forecast
+      setTemp(tempTime2, 6);
       delay(5000); //4sec
                    /*       setTemp(tempTime2, 6);
       
@@ -206,6 +200,14 @@ int getdigit(int num, int n)
   return r;
 }
 
+int concatenate(int x, int y)
+{
+  int pow = 10;
+  while (y >= pow)
+    pow *= 10;
+  return x * pow + y;
+}
+
 /* void setPressure(int pressure, int forecastTime)
 {
   NixiClock.writeSegment(getdigit(pressure, 3), 1);
@@ -214,57 +216,39 @@ int getdigit(int num, int n)
   NixiClock.writeSegment(getdigit(pressure, 0), 4);
 } */
 
-/* void setTemp(int temperature, int forecastTime)
+void setTemp(int temperature, int forecastTime)
 {
+  seg1.print(55);
+  seg2.print(44);
   if (temperature < 10 && temperature > 0)
   {
-    NixiClock.writeSegment(0, 1);
-    NixiClock.writeSegment(forecastTime, 2);
-    NixiClock.writeSegment(0, 3);
-    NixiClock.writeSegment(temperature, 4);
+    seg1.print(concatenate(0, forecastTime));
+    seg2.print(concatenate(0, temperature));
     //Serial.println("Between 0 and 10");
   }
   else if (temperature > 9)
   {
-    NixiClock.writeSegment(0, 1);
-    NixiClock.writeSegment(forecastTime, 2);
-    NixiClock.writeSegment(getdigit(temperature, 1), 3);
-    NixiClock.writeSegment(getdigit(temperature, 0), 4);
+    seg1.print(concatenate(0, forecastTime));
+    seg2.print(temperature);
     //Serial.println("above 10");
   }
   else if (temperature > -10 && temperature < 0)
   {
-    NixiClock.writeSegment(1, 1);
-    NixiClock.writeSegment(forecastTime, 2);
-    NixiClock.writeSegment(0, 3);
-    NixiClock.writeSegment(temperature, 4);
+
+    seg1.print(concatenate(1, forecastTime));
+    seg2.print(concatenate(0, abs(temperature)));
+
     //Serial.println("between -10 and 0");
   }
   else if (temperature < -9)
   {
-    NixiClock.writeSegment(1, 1);
-    NixiClock.writeSegment(forecastTime, 2);
-    NixiClock.writeSegment(getdigit(abs(temperature), 1), 3);
-    NixiClock.writeSegment(getdigit(abs(temperature), 0), 4);
+
+    seg1.print(concatenate(1, forecastTime));
+    seg2.print(abs(temperature));
     //Serial.println("below -9");
   }
   else
   {
     return;
   }
-} */
-/* 
-void setup()
-{
 }
-
-void loop()
-{
-  for (int i = 1; i < 99; i++)
-  {
-    seg1.print(i);
-    seg2.print(i);
-    delay(200);
-  }
-}
- */
