@@ -23,8 +23,8 @@ HTTPClient http;
 HTTPClient httpWeather;
 
 char timeOld;
+char timeCurrent;
 bool enableTimeOld = false;
-const char *date;
 
 const char *ssid = "WLAN-164097";
 const char *password = "4028408165188671";
@@ -122,12 +122,12 @@ void loop()
 
     if (enableTimeOld == true)
     {
-      timeOld = date[15];
+      timeOld = timeCurrent;
     }
     enableTimeOld = true;
 
     //Get Time
-    date = doc["datetime"]; //Get current time
+    const char *date = doc["datetime"]; //Get current time
 
     seg1.print(concatenate(date[11] - '0', date[12] - '0'));
     seg2.print(concatenate(date[14] - '0', date[15] - '0'));
@@ -139,8 +139,8 @@ void loop()
     Serial.println("Error on HTTP request Time");
   }
 
-  //Temperature
-  if (timeOld != date[15])
+  //Temperature & Pressure
+  if (timeOld != timeCurrent)
   {
     httpWeather.begin("http://api.openweathermap.org/data/2.5/forecast?q=Oldenburg,de&cnt=2&units=metric&appid=03e2fbe874af4836c6bf932b697a809b");
     int httpCodeWeather = httpWeather.GET();
@@ -218,8 +218,6 @@ int concatenate(int x, int y)
 
 void setTemp(int temperature, int forecastTime)
 {
-  seg1.print(55);
-  seg2.print(44);
   if (temperature < 10 && temperature > 0)
   {
     seg1.print(concatenate(0, forecastTime));
