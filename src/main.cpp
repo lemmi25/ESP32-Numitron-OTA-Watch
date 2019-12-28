@@ -235,8 +235,6 @@ int concatenate(int x, int y)
 
 void setTemp(int temperature, int forecastTime)
 {
-  seg1.print(55);
-  seg2.print(44);
   if (temperature < 10 && temperature > 0)
   {
     seg1.print(concatenate(0, forecastTime));
