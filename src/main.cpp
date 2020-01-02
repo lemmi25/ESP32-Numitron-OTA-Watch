@@ -12,6 +12,7 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <ArduinoOTA.h>
+#include <PSWD.h> //Create this file for safety
 
 TLC591x seg1(2, 4, 2, 5);    // Tube 3,4 SDI,CLK,LE
 TLC591x seg2(2, 13, 26, 25); // Tube 1,2 SDI,CLK,LE
@@ -26,8 +27,8 @@ char timeOld;
 char timeCurrent;
 bool enableTimeOld = false;
 
-const char *ssid = "WLAN-164097";
-const char *password = "4028408165188671";
+const char *ssid = SSID;
+const char *password = PSWD;
 
 void setTemp(int temperature, int forecastTime);
 void setPressure(int pressure, int forecastTime);
