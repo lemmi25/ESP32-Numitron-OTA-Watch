@@ -12,6 +12,7 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <ArduinoOTA.h>
+#include <PSWD.h> // Added file for aftey reasons
 
 TLC591x seg1(2, 4, 2, 5);    // Tube 3,4 SDI,CLK,LE
 TLC591x seg2(2, 13, 26, 25); // Tube 1,2 SDI,CLK,LE
@@ -24,8 +25,8 @@ HTTPClient httpWeather;
 
 const char *date;
 
-const char *ssid = "WLAN-164097";
-const char *password = "4028408165188671";
+const char *ssid = SSID;     // Added from file for aftey reasons look in README
+const char *password = PSWD; // Added from file for aftey reasons look in README
 
 void setTemp(int temperature, int forecastTime);
 void setPressure(int pressure, int forecastTime);
@@ -147,7 +148,7 @@ void loop()
 
     seg1.print(concatenate(date[11] - '0', date[12] - '0'));
     seg2.print(concatenate(date[14] - '0', date[15] - '0'));
-    vTaskDelay(2000); //2sec
+    delay(2000); //2sec
   }
 
   else
@@ -158,7 +159,7 @@ void loop()
   //Temperature
   if (interrupt == true)
   {
-    httpWeather.begin("http://api.openweathermap.org/data/2.5/forecast?q=Uslar,de&cnt=2&units=metric&appid=03e2fbe874af4836c6bf932b697a809b");
+    httpWeather.begin("http://api.openweathermap.org/data/2.5/forecast?q=Uslar,de&cnt=3&units=metric&appid=03e2fbe874af4836c6bf932b697a809b");
     int httpCodeWeather = httpWeather.GET();
 
     if (httpCodeWeather > 0)
@@ -173,14 +174,14 @@ void loop()
         vTaskDelay(2000); //2sec
       }
 
-      const int tempTime1 = docWeather["list"][0]["main"]["temp"]; //Get current time forecast
+      const int tempTime1 = docWeather["list"][1]["main"]["temp"]; //Get current time forecast
       //const int pressure1 = docWeather["list"][0]["main"]["pressure"]; //Get current time forecast
       setTemp(tempTime1, 3);
       delay(5000); //4sec
       //setPressure(pressure1, 3);
       //delay(5000); //4sec
 
-      const int tempTime2 = docWeather["list"][1]["main"]["temp"]; //Get current time
+      const int tempTime2 = docWeather["list"][2]["main"]["temp"]; //Get current time
       //const int pressure2 = docWeather["list"][1]["main"]["pressure"]; //Get current time forecast
       setTemp(tempTime2, 6);
       delay(5000); //4sec
@@ -235,22 +236,22 @@ int concatenate(int x, int y)
 
 void setTemp(int temperature, int forecastTime)
 {
-  if (temperature < 10 && temperature > 0)
+  if (temperature < 10 && temperature >= 0)
   {
-    seg1.print(concatenate(0, forecastTime));
+    seg1.print(concatenate(forecastTime, 12));
     seg2.print(concatenate(0, temperature));
     //Serial.println("Between 0 and 10");
   }
   else if (temperature > 9)
   {
-    seg1.print(concatenate(0, forecastTime));
+    seg1.print(concatenate(forecastTime, 12));
     seg2.print(temperature);
     //Serial.println("above 10");
   }
   else if (temperature > -10 && temperature < 0)
   {
 
-    seg1.print(concatenate(1, forecastTime));
+    seg1.print(concatenate(forecastTime, 11));
     seg2.print(concatenate(0, abs(temperature)));
 
     //Serial.println("between -10 and 0");
@@ -258,7 +259,7 @@ void setTemp(int temperature, int forecastTime)
   else if (temperature < -9)
   {
 
-    seg1.print(concatenate(1, forecastTime));
+    seg1.print(concatenate(forecastTime, 11));
     seg2.print(abs(temperature));
     //Serial.println("below -9");
   }

@@ -1,0 +1,6 @@
+
+//Kraftnetz EG
+//92626772151712607523
+
+const char *SSID = "WLAN-164097";
+const char *PSWD = "4028408165188671";

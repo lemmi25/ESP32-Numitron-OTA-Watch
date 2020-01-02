@@ -68,7 +68,26 @@ uint8_t *TLC591x::convertFrom16To8(uint16_t dataAll)
 
 void TLC591x::print(unsigned int number)
 {
-  printValue(convertFrom8To16(segements[(number / 10) % 10], segements[number % 10]));
+  if (number == 311)
+  { // for 3 -
+    printValue(convertFrom8To16(segements[3], segements[10]));
+  }
+  else if (number == 611)
+  { // for 6 -
+    printValue(convertFrom8To16(segements[6], segements[10]));
+  }
+  else if (number == 312)
+  { // for 3 nothing
+    printValue(convertFrom8To16(segements[3], segements[11]));
+  }
+  else if (number == 612)
+  { // for 6 nothing
+    printValue(convertFrom8To16(segements[6], segements[11]));
+  }
+  else
+  {
+    printValue(convertFrom8To16(segements[(number / 10) % 10], segements[number % 10]));
+  }
 }
 
 void TLC591x::printValue(unsigned int n)
