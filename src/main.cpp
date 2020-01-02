@@ -132,55 +132,52 @@ void loop()
     seg1.print(concatenate(date[11] - '0', date[12] - '0'));
     seg2.print(concatenate(date[14] - '0', date[15] - '0'));
     vTaskDelay(2000); //2sec
-  }
 
-  else
-  {
-    Serial.println("Error on HTTP request Time");
-  }
+    timeCurrent = date[15];
 
-  //Temperature & Pressure
-  if (timeOld != timeCurrent)
-  {
-    httpWeather.begin("http://api.openweathermap.org/data/2.5/forecast?q=Oldenburg,de&cnt=2&units=metric&appid=03e2fbe874af4836c6bf932b697a809b");
-    int httpCodeWeather = httpWeather.GET();
+    //Temperature & Pressure
+    if (timeOld != timeCurrent)
+    {
+      httpWeather.begin("http://api.openweathermap.org/data/2.5/forecast?q=Sandkrug,de&cnt=3&units=metric&appid=03e2fbe874af4836c6bf932b697a809b");
+      int httpCodeWeather = httpWeather.GET();
 
-    if (httpCodeWeather > 0)
-    { //Check for the returning code
+      if (httpCodeWeather > 0)
+      { //Check for the returning code
 
-      DeserializationError errorWeather = deserializeJson(docWeather, httpWeather.getString());
+        DeserializationError errorWeather = deserializeJson(docWeather, httpWeather.getString());
 
-      if (errorWeather)
-      {
-        Serial.print(F("deserializeJson() from weather failed: "));
-        Serial.println(errorWeather.c_str());
-        vTaskDelay(2000); //2sec
-      }
+        if (errorWeather)
+        {
+          Serial.print(F("deserializeJson() from weather failed: "));
+          Serial.println(errorWeather.c_str());
+          delay(2000); //2sec
+        }
 
-      const int tempTime1 = docWeather["list"][0]["main"]["temp"]; //Get current time forecast
-      //const int pressure1 = docWeather["list"][0]["main"]["pressure"]; //Get current time forecast
-      setTemp(tempTime1, 3);
-      delay(5000); //4sec
-      //setPressure(pressure1, 3);
-      //delay(5000); //4sec
+        const int tempTime1 = docWeather["list"][1]["main"]["temp"]; //Get current time forecast
+        //const int pressure1 = docWeather["list"][0]["main"]["pressure"]; //Get current time forecast
+        setTemp(tempTime1, 3);
+        delay(5000); //4sec
+        //setPressure(pressure1, 3);
+        //delay(5000); //4sec
 
-      const int tempTime2 = docWeather["list"][1]["main"]["temp"]; //Get current time
-      //const int pressure2 = docWeather["list"][1]["main"]["pressure"]; //Get current time forecast
-      setTemp(tempTime2, 6);
-      delay(5000); //4sec
-                   /*       setTemp(tempTime2, 6);
+        const int tempTime2 = docWeather["list"][2]["main"]["temp"]; //Get current time
+        //const int pressure2 = docWeather["list"][1]["main"]["pressure"]; //Get current time forecast
+        setTemp(tempTime2, 6);
+        delay(5000); //4sec
+                     /*       setTemp(tempTime2, 6);
       
       setPressure(pressure2, 3);
       delay(5000); //4sec */
-    }
-    else
-    {
-      Serial.println("Error on HTTP request Date");
+      }
+      else
+      {
+        Serial.println("Error on HTTP request Date");
+      }
     }
   }
   else
   {
-    return;
+    Serial.println("Error on HTTP request Time");
   }
 }
 
@@ -218,22 +215,22 @@ int concatenate(int x, int y)
 
 void setTemp(int temperature, int forecastTime)
 {
-  if (temperature < 10 && temperature > 0)
+  if (temperature < 10 && temperature >= 0)
   {
-    seg1.print(concatenate(0, forecastTime));
+    seg1.print(concatenate(forecastTime, 12));
     seg2.print(concatenate(0, temperature));
     //Serial.println("Between 0 and 10");
   }
   else if (temperature > 9)
   {
-    seg1.print(concatenate(0, forecastTime));
+    seg1.print(concatenate(forecastTime, 12));
     seg2.print(temperature);
     //Serial.println("above 10");
   }
   else if (temperature > -10 && temperature < 0)
   {
 
-    seg1.print(concatenate(1, forecastTime));
+    seg1.print(concatenate(forecastTime, 11));
     seg2.print(concatenate(0, abs(temperature)));
 
     //Serial.println("between -10 and 0");
@@ -241,7 +238,7 @@ void setTemp(int temperature, int forecastTime)
   else if (temperature < -9)
   {
 
-    seg1.print(concatenate(1, forecastTime));
+    seg1.print(concatenate(forecastTime, 11));
     seg2.print(abs(temperature));
     //Serial.println("below -9");
   }

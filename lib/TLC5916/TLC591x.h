@@ -56,7 +56,8 @@ private:
 // 0x00 is a blank character and is used for unsupported values.
 // Save memory by not defining first 32 ascii characters, since they
 // are all control characters
-const uint8_t segements[10] = {252, 96, 218, 242, 102, 182, 190, 224, 254, 230};
+// number 11 in array is - for weather
+const uint8_t segements[12] = {252, 96, 218, 242, 102, 182, 190, 224, 254, 230, 2, 0};
 #endif
 /* Library to interface with the Texas Instruments TLC5916 and TLC5917
    8-Channel Constant-Current LED Sink Drivers.
