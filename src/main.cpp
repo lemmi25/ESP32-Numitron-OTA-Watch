@@ -66,6 +66,9 @@ void setup()
   while (WiFi.waitForConnectResult() != WL_CONNECTED)
   {
     Serial.println("Connection Failed! Rebooting...");
+    //No internet on startup show 98 98
+    seg1.print(99);
+    seg2.print(99);
     delay(5000);
     ESP.restart();
   }
@@ -112,17 +115,28 @@ void setup()
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
-  for (int i = 1; i < 99; i++)
+  /*   for (int i = 1; i < 99; i++)
   {
     seg1.print(i);
     seg2.print(i);
     delay(200);
-  }
+  } */
 }
 
 void loop()
 {
   ArduinoOTA.handle();
+
+  if (WiFi.waitForConnectResult() != WL_CONNECTED)
+  {
+    Serial.println("Connection Failed! Rebooting...");
+    //No internet show 98 98 but had internet at start up
+    //seg1.print(98);
+    //seg2.print(98);
+    delay(5000);
+    //esp_wifi_restore
+    ESP.restart();
+  }
 
   //Time
 
@@ -139,7 +153,7 @@ void loop()
     {
       Serial.print(F("deserializeJson() failed: "));
       Serial.println(error.c_str());
-      delay(2000); //2sec
+      delay(2500); //2.5sec
       return;
     }
 
@@ -148,7 +162,7 @@ void loop()
 
     seg1.print(concatenate(date[11] - '0', date[12] - '0'));
     seg2.print(concatenate(date[14] - '0', date[15] - '0'));
-    delay(2000); //2sec
+    delay(2500); //2.5sec
   }
 
   else
