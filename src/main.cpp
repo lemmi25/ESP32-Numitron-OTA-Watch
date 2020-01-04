@@ -44,6 +44,8 @@ void setup()
   while (WiFi.waitForConnectResult() != WL_CONNECTED)
   {
     Serial.println("Connection Failed! Rebooting...");
+    seg1.print(99);
+    seg2.print(99);
     delay(5000);
     ESP.restart();
   }
@@ -90,18 +92,27 @@ void setup()
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
-  for (int i = 1; i < 99; i++)
+  /*   for (int i = 1; i < 99; i++)
   {
     seg1.print(i);
     seg2.print(i);
     delay(200);
-  }
+  } */
 }
 
 void loop()
 {
   ArduinoOTA.handle();
 
+  if (WiFi.waitForConnectResult() != WL_CONNECTED)
+  {
+    Serial.println("Connection Failed! Rebooting...");
+    //No internet show 98 98 but had internet at start up
+    //seg1.print(98);
+    //seg2.print(98);
+    delay(5000);
+    ESP.restart();
+  }
   //Time
 
   http.begin("http://worldtimeapi.org/api/timezone/Europe/Berlin.json"); //Specify the URL
