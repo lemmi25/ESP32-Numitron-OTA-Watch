@@ -17,7 +17,7 @@
 TLC591x seg1(2, 4, 2, 5);    // Tube 3,4 SDI,CLK,LE
 TLC591x seg2(2, 13, 26, 25); // Tube 1,2 SDI,CLK,LE
 
-StaticJsonDocument<500> doc;
+StaticJsonDocument<1000> doc;
 StaticJsonDocument<5000> docWeather;
 
 HTTPClient http;
@@ -26,9 +26,6 @@ HTTPClient httpWeather;
 char timeOld;
 char timeCurrent;
 bool enableTimeOld = false;
-
-const char *ssid = SSID;
-const char *password = PSWD;
 
 void setTemp(int temperature, int forecastTime);
 void setPressure(int pressure, int forecastTime);
@@ -150,7 +147,7 @@ void loop()
     //Temperature & Pressure
     if (timeOld != timeCurrent)
     {
-      httpWeather.begin("http://api.openweathermap.org/data/2.5/forecast?q=Sandkrug,de&cnt=3&units=metric&appid=03e2fbe874af4836c6bf932b697a809b");
+      httpWeather.begin("http://api.openweathermap.org/data/2.5/forecast?q=Freiburg,de&cnt=3&units=metric&appid=03e2fbe874af4836c6bf932b697a809b");
       int httpCodeWeather = httpWeather.GET();
 
       if (httpCodeWeather > 0)
