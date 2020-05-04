@@ -17,7 +17,7 @@
 TLC591x seg1(2, 4, 2, 5);    // Tube 3,4 SDI,CLK,LE
 TLC591x seg2(2, 13, 26, 25); // Tube 1,2 SDI,CLK,LE
 
-StaticJsonDocument<500> doc;
+StaticJsonDocument<5000> doc;
 StaticJsonDocument<5000> docWeather;
 
 HTTPClient http;
